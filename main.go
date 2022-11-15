@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"log"
 	"os"
@@ -12,7 +13,12 @@ import (
 	"github.com/moutend/go-wca/pkg/wca"
 )
 
-var mmde *wca.IMMDeviceEnumerator
+var (
+	//go:embed resources
+	f embed.FS
+
+	mmde *wca.IMMDeviceEnumerator
+)
 
 func main() {
 	log.SetFlags(0)
@@ -134,7 +140,10 @@ func onPropertyValueChanged(pwstrDeviceId string, key uint64) error {
 }
 
 func onReady() {
-	icon, err := os.ReadFile("icon.ico")
+	icon, err := f.ReadFile("resources/icon.ico")
+	if err != nil {
+		log.Panic(err.Error())
+	}
 	systray.SetTemplateIcon(icon, icon)
 	systray.SetTitle("Awesome App")
 	systray.SetTooltip("Lantern")
@@ -148,9 +157,6 @@ func onReady() {
 
 	// We can manipulate the systray in other goroutines
 	go func() {
-		if err != nil {
-			log.Panic(err.Error())
-		}
 		systray.SetTemplateIcon(icon, icon)
 		systray.SetTitle("Awesome App")
 		systray.SetTooltip("Pretty awesome棒棒嗒")
