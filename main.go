@@ -10,6 +10,7 @@ import (
 
 	"github.com/getlantern/systray"
 	"github.com/go-ole/go-ole"
+	"github.com/go-toast/toast"
 	"github.com/moutend/go-wca/pkg/wca"
 )
 
@@ -100,8 +101,10 @@ func onDefaultDeviceChanged(flow wca.EDataFlow, role wca.ERole, pwstrDeviceId st
 		var deviceName string = pv.String()
 		systray.SetTooltip(deviceName)
 		fmt.Printf("%s\n", deviceName)
+		doToast(deviceName)
 		if strings.Contains(strings.ToLower(deviceName), "shanling") {
 			fmt.Printf("Headphones detected: Setting Volume MAX!\n")
+			doToast(deviceName)
 			var aev *wca.IAudioEndpointVolume
 			if err := mmd.Activate(wca.IID_IAudioEndpointVolume, wca.CLSCTX_ALL, nil, &aev); err != nil {
 				return err
@@ -166,4 +169,22 @@ func onReady() {
 
 func onExit() {
 	fmt.Printf("systray custom exit")
+}
+
+func doToast(devicename string) {
+	notification := toast.Notification{
+		AppID:   "goBluetoothHeadphoneVolume",
+		Title:   "DefaultDevice changed:",
+		Message: devicename,
+		//Icon:    "resources/icon.png",
+		/*
+		   Actions: []toast.Action{
+		       {"protocol", "I'm a button", ""},
+		       {"protocol", "Me too!", ""},
+		   },*/
+	}
+	err := notification.Push()
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
